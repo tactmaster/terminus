@@ -23,7 +23,8 @@ module Terminus
         :input_path,
         :output_path
       ) do
-        def color? = dither? && Array(color_codes).any?
+        # Full color palettes can intentionally have no explicit color codes.
+        def color? = dither? && (Array(color_codes).any? || bit_depth.to_i >= 8)
 
         def crop = "#{dimensions}+#{offset_x}+#{offset_y}"
 

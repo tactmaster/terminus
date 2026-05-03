@@ -1,0 +1,20 @@
+services:
+    web:
+        environment:
+            DATABASE_URL: ${EXTERNAL_DATABASE_URL}
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        depends_on:
+            init-certificates:
+                condition: service_completed_successfully
+            keyvalue:
+                condition: service_healthy
+
+    worker:
+        environment:
+            DATABASE_URL: ${EXTERNAL_DATABASE_URL}
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        depends_on:
+            web:
+                condition: service_healthy

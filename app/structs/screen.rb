@@ -37,7 +37,8 @@ module Terminus
       def image_name_with_checksum
         path = Pathname(image_attributes.dig(:metadata, :filename))
         extension = path.extname
-        path.sub_ext("-#{image_attributes.dig :metadata, :checksum}#{extension}").to_s
+        fingerprint = Pathname(image_id.to_s).basename(".*").to_s
+        path.sub_ext("-#{fingerprint}#{extension}").to_s
       end
 
       def image_open(**)

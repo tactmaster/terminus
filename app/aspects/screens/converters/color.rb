@@ -19,7 +19,7 @@ module Terminus
 
           def convert mold
             output_path = mold.output_path
-            colors = mold.color_codes.map { "xc:#{it}" }
+            colors = Array(mold.color_codes).map { "xc:#{it}" }
 
             mini_magick.convert do |tool|
               tool << mold.input_path.to_s
@@ -29,19 +29,25 @@ module Terminus
               tool.normalize
               tool.modulate "110,150"
               tool.colorspace "RGB"
-              tool.merge! [
-                "(",
-                "-size",
-                "1x1",
-                *colors,
-                "+append",
-                "+write",
-                "mpr:palette",
-                "+delete",
-                ")"
-              ]
-              tool.dither "FloydSteinberg"
-              tool.remap "mpr:palette"
+              if colors.any?
+                tool.merge! [
+                  "(",
+                  "-size",
+                  "1x1",
+                  *colors,
+                  "+append",
+                  "+write",
+                  "mpr:palette",
+                  "+delete",
+                  ")"
+                ]
+                # For small fixed palettes (like 6-color e-paper), disable dithering
+                # to avoid grain and force direct nearest-color mapping.
+                tool.dither(colors.length <= 7 ? "None" : "FloydSteinberg")
+                tool.remap "mpr:palette"
+              else
+                tool.depth mold.bit_depth.to_s
+              end
               tool.colorspace "sRGB"
               tool << "#{mold.file_type}:#{output_path}"
             end
